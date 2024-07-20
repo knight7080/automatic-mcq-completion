@@ -65,6 +65,8 @@ Create a `.env` file in the project root directory and add your API key:
 
 ```dotenv
 API_KEY=your_google_ai_labs_api_key
+R_NO = your_moodle_reg_number
+PASS = your_moodle_password
 ```
 
 ## Usage

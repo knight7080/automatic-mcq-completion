@@ -5,9 +5,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import google.generativeai as genai
 import time
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# key = os.getenv('API_KEY')
-key = "AIzaSyAN2OVdZvDzv3xzGIx2MHX1cO-XGMJN0gE"
+key = os.environ.get('API_KEY')
 print(key)
 
 
@@ -34,8 +35,16 @@ def process(driver):
         option = driver.find_element(By.CLASS_NAME, "answer").text
         print(option)
 
-        ans = gemini(question + option)
-        ans = ans[0:3].lower()
+        try:
+            ans = gemini(question + option)
+            ans = ans[0:3].lower()
+        except Exception as err:
+            print(err)
+            print("Retrying in 20 Seconds...")
+            time.sleep(20)
+            ans = gemini(question + option)
+            ans = ans[0:3].lower()
+
         print(ans, len(ans))
         try:
             driver.find_element(By.XPATH, "//span[text()='" + ans + "']").click()
@@ -50,21 +59,14 @@ def process(driver):
             driver.find_element(By.XPATH, "//button[text()='" + "Submit all and finish" + "']").click()
             time.sleep(5)
 
-            # wait = WebDriverWait(driver, 20)
-            # modal = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='modal-content']")))
-            #
-            # submit_button = modal.find_element(By.XPATH, "//button[@data-action='save']")
-            # submit_button.click()
             try:
                 modal = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='modal-content']")))
                 modal = WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='modal-content']")))
 
-                # Scroll the button into view and wait until it is clickable
                 submit_button = modal.find_element(By.XPATH, "//button[@data-action='save']")
                 driver.execute_script("arguments[0].scrollIntoView(true);", submit_button)
                 WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-action='save']")))
 
-                # Attempt to click the button, handling potential exceptions
                 try:
                     submit_button.click()
                 except (ElementNotInteractableException, ElementClickInterceptedException):
