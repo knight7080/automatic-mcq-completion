@@ -28,7 +28,10 @@ def process(driver):
     try:
         driver.find_element(By.XPATH, "//button[text()='" + "Attempt quiz" + "']").click()
     except:
-        driver.find_element(By.XPATH, "//button[text()='" + "Continue your attempt" + "']").click()
+        try:
+            driver.find_element(By.XPATH, "//button[text()='" + "Continue your attempt" + "']").click()
+        except:
+            driver.find_element(By.XPATH, "//button[text()='" + "Re-attempt quiz" + "']").click()
     while True:
         time.sleep(5)
         question = driver.find_element(By.CLASS_NAME, "qtext").text
