@@ -2,8 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import time
-chrome_options = []
+
+chrome_options = Options()
+chrome_options.add_argument('--headless')
 
 
 def connect():

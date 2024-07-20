@@ -1,3 +1,4 @@
+from selenium.common import ElementNotInteractableException, ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -5,7 +6,8 @@ import google.generativeai as genai
 import time
 import os
 
-key = os.getenv('API_KEY')
+# key = os.getenv('API_KEY')
+key = "AIzaSyAN2OVdZvDzv3xzGIx2MHX1cO-XGMJN0gE"
 print(key)
 
 
@@ -13,7 +15,7 @@ def gemini(question):
     genai.configure(api_key=key)
     model = genai.GenerativeModel('gemini-1.5-pro')
     chat = model.start_chat(history=[])
-    response = chat.send_message(question + "just give me the answer no extra explanation needed")
+    response = chat.send_message(question + " provide only the selected option letter and a period (e.g., 'c. '")
     time.sleep(8)
     answer = response.text
     return answer
@@ -30,26 +32,46 @@ def process(driver):
         time.sleep(5)
         question = driver.find_element(By.CLASS_NAME, "qtext").text
         option = driver.find_element(By.CLASS_NAME, "answer").text
+        print(option)
 
         ans = gemini(question + option)
-        ans = ans[0:3]
+        ans = ans[0:3].lower()
         print(ans, len(ans))
         try:
             driver.find_element(By.XPATH, "//span[text()='" + ans + "']").click()
         except:
-            driver.find_element(By.XPATH, f"//label[contains(text(), '{ans}')]").click()
-        time.sleep(1)
+            driver.find_element(By.XPATH, f"//label[contains(text(), '{ans.lower()}')]").click()
+            time.sleep(1)
         try:
             driver.find_element(By.XPATH, '//input[@value="Next page"]').click()
         except:
             driver.find_element(By.XPATH, '//input[@value="Finish attempt ..."]').click()
             time.sleep(5)
             driver.find_element(By.XPATH, "//button[text()='" + "Submit all and finish" + "']").click()
-            time.sleep(3)
+            time.sleep(5)
 
-            wait = WebDriverWait(driver, 10)
-            modal = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='modal-dialog modal-dialog-scrollable']")))
+            # wait = WebDriverWait(driver, 20)
+            # modal = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='modal-content']")))
+            #
+            # submit_button = modal.find_element(By.XPATH, "//button[@data-action='save']")
+            # submit_button.click()
+            try:
+                modal = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='modal-content']")))
+                modal = WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='modal-content']")))
 
-            submit_button = modal.find_element(By.XPATH, "//button[@data-action='save']")
-            submit_button.click()
+                # Scroll the button into view and wait until it is clickable
+                submit_button = modal.find_element(By.XPATH, "//button[@data-action='save']")
+                driver.execute_script("arguments[0].scrollIntoView(true);", submit_button)
+                WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-action='save']")))
+
+                # Attempt to click the button, handling potential exceptions
+                try:
+                    submit_button.click()
+                except (ElementNotInteractableException, ElementClickInterceptedException):
+                    print("Element is not interactable or click intercepted. Trying alternative click.")
+                    driver.execute_script("arguments[0].click();", submit_button)
+
+            except TimeoutException:
+                print("Modal did not appear in time")
+
             break
