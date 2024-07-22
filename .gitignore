@@ -17,7 +17,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
+cookies.pkl
 # Virtual environment
 .venv/
 env1/
