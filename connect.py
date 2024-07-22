@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 chrome_options = Options()
-chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--headless')
 
 def save_cookies(driver, location):
     with open(location, 'wb') as filehandler:
@@ -36,6 +36,7 @@ def connect():
         load_cookies(driver, "cookies.pkl")
         driver.get("https://lms2.ai.saveetha.in")
     except:
+        driver.get(login_url)
         rno = os.environ.get("R_NO")
         pas = os.environ.get("PASS")
         u_btn = driver.find_element(By.NAME, "username")
