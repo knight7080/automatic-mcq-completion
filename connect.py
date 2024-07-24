@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
@@ -10,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 chrome_options = Options()
-# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 
 def save_cookies(driver, location):
     with open(location, 'wb') as filehandler:
@@ -35,7 +37,18 @@ def connect():
         driver.get("https://lms2.ai.saveetha.in")
         load_cookies(driver, "cookies.pkl")
         driver.get("https://lms2.ai.saveetha.in")
-    except:
+        try:
+            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//h1[text()='My courses']")))
+        except:
+            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//h4[text()='Confirm']")))
+
+    except Exception as err:
+        print("except hit...")
+        print(err)
+        try:
+            os.remove('cookies.pkl')
+        except:
+            pass
         driver.get(login_url)
         rno = os.environ.get("R_NO")
         pas = os.environ.get("PASS")
